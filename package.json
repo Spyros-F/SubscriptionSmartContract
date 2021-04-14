@@ -1,0 +1,36 @@
+{
+  "name": "my-erc-20",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "compile": "rm -rf build && truffle compile --all",
+    "test": "scripts/test.sh test/**/*.test.js",
+    "migrate:ethLocal": "truffle migrate --network ethLocal > migrationEthLocal.txt",
+    "migrate:bscLocal": "truffle migrate --network bscLocal > migrationBscLocal.txt",
+    "migrate:ethTestnet": "truffle migrate --network ethTestnet > migrationEthTestnet.txt",
+    "migrate:bscTestnet": "truffle migrate --network bscTestnet > migrationBscTestnet.txt",
+    "migrate:ethMainnet": "truffle migrate --network ethMainnet > migrationEthMainnet.txt",
+    "migrate:bscMainnet": "truffle migrate --network bscMainnet > migrationBscMainnet.txt",
+    "start:eth": "ganache-cli --gasLimit 8000000 --chainId 1000 --port 8545 --blockTime 15 --mnemonic \"master ask swing define pepper humor expect caught vapor fly stand convince\"",
+    "start:bsc": "ganache-cli --gasLimit 8000000 --chainId 2000 --port 8546 --blockTime 5 --mnemonic \"master ask swing define pepper humor expect caught vapor fly stand convince\""
+  },
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.10",
+    "@openzeppelin/truffle-upgrades": "^1.5.0",
+    "@truffle/hdwallet-provider": "^1.2.6",
+    "chai": "^4.3.0",
+    "chai-bignumber": "^3.0.0",
+    "eth-gas-reporter": "^0.2.21",
+    "ganache-cli": "^6.12.2",
+    "mocha": "^8.3.0",
+    "solidity-coverage": "^0.7.15",
+    "truffle": "^5.2.1",
+    "web3-privatekey-provider": "1.1.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.0",
+    "@openzeppelin/contracts-upgradeable": "^3.4.0",
+    "sqlite3": "^5.0.2"
+  }
+}
