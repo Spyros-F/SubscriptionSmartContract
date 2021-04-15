@@ -4,14 +4,14 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./token/IBEP20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract SubscriptionContract is Context, Ownable {
-  using SafeERC20 for IBEP20;
 
   uint256 private sizeOfSubscription;
   uint256 private totalSupply;
   address private vaultAddress;
-  IBEP20 token;
+  ERC20  token;
   mapping (address => User) userInfo;
 
   struct User {
@@ -25,14 +25,14 @@ contract SubscriptionContract is Context, Ownable {
     uint256 expiry;
   }
 
-  constructor(uint256 _sizeOfSubscription, address _vaultAddress, IBEP20 _token) {
+  constructor(uint256 _sizeOfSubscription, address _vaultAddress, ERC20 _token) {
     sizeOfSubscription = _sizeOfSubscription;
     vaultAddress = _vaultAddress;
     token = _token;
   }
 
-  function balanceOf(address user) public view virtual  returns (uint256) {
-    return user.balance;
+  function balanceOf(address user) public view virtual returns (uint256) {
+    return userInfo[user].balance;
   }
 
   function getSizeOfSubscription() public view virtual  returns (uint256) {
@@ -50,7 +50,7 @@ contract SubscriptionContract is Context, Ownable {
     user.subInfo.expiry = block.timestamp + 30 days;
     totalSupply -= sizeOfSubscription;
     user.balance -= sizeOfSubscription;
-    token.safeTransfer(vaultAddress, sizeOfSubscription);
+    token.transfer(vaultAddress, sizeOfSubscription);
   }
 
   function checkSubscription(User storage user) internal returns(bool status){        
@@ -72,7 +72,7 @@ contract SubscriptionContract is Context, Ownable {
     User storage user = userInfo[msg.sender];
 
     if(user.subInfo.status == true) {
-      token.safeTransferFrom(address(this), msg.sender, sizeOfSubscription);
+      token.transferFrom(address(this), msg.sender, sizeOfSubscription);
       user.balance -= sizeOfSubscription;
       totalSupply -= sizeOfSubscription;
       user.subInfo.status = false;
