@@ -11,6 +11,7 @@ contract SubscriptionContract is Context, Ownable {
   uint256 private sizeOfSubscription;
   uint256 private totalSupply;
   address private vaultAddress;
+  bool private isUserSubscribed;
   ERC20  token;
   mapping (address => User) userInfo;
 
@@ -39,42 +40,48 @@ contract SubscriptionContract is Context, Ownable {
     return sizeOfSubscription;
   }
 
+  function getToken() public view virtual  returns (ERC20) {
+    return token;
+  }
+
+  function getVaultAddress() public view virtual  returns (address) {
+    return vaultAddress;
+  }
+
   function setSizeOfSubscription(uint256 _sizeOfSubscription) public onlyOwner{
     sizeOfSubscription = _sizeOfSubscription;
   }
 
+  function getIsUserSubscribed() public view returns (bool) {
+    return isUserSubscribed;
+  }
+
   function subscribe() public {
     User storage user = userInfo[msg.sender];
-
-    user.subInfo.status = true;    
+    Subscription memory subInfo = Subscription(false, block.timestamp);
+    user.subInfo = subInfo;
+    user.subInfo.status = true;
     user.subInfo.expiry = block.timestamp + 30 days;
     totalSupply -= sizeOfSubscription;
     user.balance -= sizeOfSubscription;
-    token.transfer(vaultAddress, sizeOfSubscription);
+    require(token.transfer(vaultAddress, sizeOfSubscription), "Transfer to vault address failed");
   }
 
-  function checkSubscription(User storage user) internal returns(bool status){        
-    if(user.subInfo.status != true) {  
-      // if the user is not subscribed          
-      return false;        
-    }        
-    if (block.timestamp >= user.subInfo.expiry) {   
-      // if the subscription has expired  
-      // update status to false        
-      user.subInfo.status = false;            
-      return false;        
-    } else {            
-      return true;        
-    }    
+  function checkSubscription(address user) public {        
+    if (userInfo[user].subInfo.status == true) {
+      isUserSubscribed = true;
+    } else {
+      isUserSubscribed = false;
+    }
   }
 
   function cancelSubscription() public {
     User storage user = userInfo[msg.sender];
 
     if(user.subInfo.status == true) {
-      token.transferFrom(address(this), msg.sender, sizeOfSubscription);
-      user.balance -= sizeOfSubscription;
-      totalSupply -= sizeOfSubscription;
+      token.transferFrom(vaultAddress, msg.sender, sizeOfSubscription);
+      user.balance += sizeOfSubscription;
+      totalSupply += sizeOfSubscription;
       user.subInfo.status = false;
     }
   }
@@ -91,5 +98,6 @@ contract SubscriptionContract is Context, Ownable {
     if(!user.subInfo.status) {
       subscribe();
     }
+    emit Deposit(msg.sender, amount);
   }
 }

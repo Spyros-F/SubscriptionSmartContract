@@ -199,18 +199,18 @@
     "absolutePath": "/mnt/d/Work/SubscriptionSmartContract/SubscriptionSmartContract/contracts/token/IBEP20.sol",
     "exportedSymbols": {
       "IBEP20": [
-        812
+        809
       ],
       "IERC20": [
-        1355
+        1855
       ]
     },
-    "id": 813,
+    "id": 810,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 807,
+        "id": 804,
         "literals": [
           "solidity",
           "0.8",
@@ -222,11 +222,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "id": 808,
+        "id": 805,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 813,
-        "sourceUnit": 1356,
+        "scope": 810,
+        "sourceUnit": 1856,
         "src": "56:56:2",
         "symbolAliases": [],
         "unitAlias": ""
@@ -236,38 +236,38 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 810,
+              "id": 807,
               "name": "IERC20",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 1355,
+              "referencedDeclaration": 1855,
               "src": "205:6:2"
             },
-            "id": 811,
+            "id": 808,
             "nodeType": "InheritanceSpecifier",
             "src": "205:6:2"
           }
         ],
         "contractDependencies": [
-          1355
+          1855
         ],
         "contractKind": "interface",
         "documentation": {
-          "id": 809,
+          "id": 806,
           "nodeType": "StructuredDocumentation",
           "src": "114:70:2",
           "text": " @dev Interface of the BEP20 standard as defined in the EIP."
         },
         "fullyImplemented": false,
-        "id": 812,
+        "id": 809,
         "linearizedBaseContracts": [
-          812,
-          1355
+          809,
+          1855
         ],
         "name": "IBEP20",
         "nameLocation": "195:6:2",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 813,
+        "scope": 810,
         "src": "185:29:2"
       }
     ],
@@ -277,18 +277,18 @@
     "absolutePath": "/mnt/d/Work/SubscriptionSmartContract/SubscriptionSmartContract/contracts/token/IBEP20.sol",
     "exportedSymbols": {
       "IBEP20": [
-        812
+        809
       ],
       "IERC20": [
-        1355
+        1855
       ]
     },
-    "id": 813,
+    "id": 810,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 807,
+        "id": 804,
         "literals": [
           "solidity",
           "0.8",
@@ -300,11 +300,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "id": 808,
+        "id": 805,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 813,
-        "sourceUnit": 1356,
+        "scope": 810,
+        "sourceUnit": 1856,
         "src": "56:56:2",
         "symbolAliases": [],
         "unitAlias": ""
@@ -314,38 +314,38 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 810,
+              "id": 807,
               "name": "IERC20",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 1355,
+              "referencedDeclaration": 1855,
               "src": "205:6:2"
             },
-            "id": 811,
+            "id": 808,
             "nodeType": "InheritanceSpecifier",
             "src": "205:6:2"
           }
         ],
         "contractDependencies": [
-          1355
+          1855
         ],
         "contractKind": "interface",
         "documentation": {
-          "id": 809,
+          "id": 806,
           "nodeType": "StructuredDocumentation",
           "src": "114:70:2",
           "text": " @dev Interface of the BEP20 standard as defined in the EIP."
         },
         "fullyImplemented": false,
-        "id": 812,
+        "id": 809,
         "linearizedBaseContracts": [
-          812,
-          1355
+          809,
+          1855
         ],
         "name": "IBEP20",
         "nameLocation": "195:6:2",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 813,
+        "scope": 810,
         "src": "185:29:2"
       }
     ],
@@ -357,7 +357,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-14T18:22:55.044Z",
+  "updatedAt": "2021-04-15T07:53:14.980Z",
   "devdoc": {
     "details": "Interface of the BEP20 standard as defined in the EIP.",
     "kind": "dev",
