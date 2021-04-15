@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "compile": "rm -rf build && truffle compile --all",
-    "test": "scripts/test.sh test/**/*.test.js",
+    "test": "scripts/test.sh test/*.test.js",
     "migrate:ethLocal": "truffle migrate --network ethLocal > migrationEthLocal.txt",
     "migrate:bscLocal": "truffle migrate --network bscLocal > migrationBscLocal.txt",
     "migrate:ethTestnet": "truffle migrate --network ethTestnet > migrationEthTestnet.txt",
