@@ -69,7 +69,12 @@ contract SubscriptionContract is Context, Ownable {
 
   function checkSubscription(address user) public {        
     if (userInfo[user].subInfo.status == true) {
-      isUserSubscribed = true;
+      if(userInfo[user].subInfo.expiry < block.timestamp ) {
+        isUserSubscribed = false;
+        userInfo[user].subInfo.status = false;
+      } else {
+        isUserSubscribed = true;
+      }
     } else {
       isUserSubscribed = false;
     }
