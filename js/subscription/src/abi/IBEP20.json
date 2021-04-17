@@ -357,7 +357,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-17T17:55:17.880Z",
+  "updatedAt": "2021-04-17T22:23:22.601Z",
   "devdoc": {
     "details": "Interface of the BEP20 standard as defined in the EIP.",
     "kind": "dev",
