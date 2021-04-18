@@ -22,7 +22,7 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 const secrets = JSON.parse(fs.readFileSync(".secrets.json").toString().trim());
 
-const path = require('path');
+// const path = require('path');
 
 module.exports = {
   /**
@@ -34,7 +34,7 @@ module.exports = {
    *
    * $ truffle test --network <network-name>
    */
-  contracts_build_directory: path.join(__dirname, "../js/subscription/src/abi"),
+  // contracts_build_directory: path.join(__dirname, "../js/subscription/src/abi"),
   networks: {
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
