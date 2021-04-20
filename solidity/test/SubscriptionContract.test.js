@@ -100,4 +100,21 @@ contract('SubscriptionContract', accounts => {
     await instance.checkSubscription(accounts[1])
     assert.equal(await instance.getIsUserSubscribed(), false)
   })
+
+  it('test getIsUserSubscribed function, must return true', async() => {
+    await daiInstance.mint(accounts[1], 100)
+    await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
+    await instance.deposit(50, {from: accounts[1]}) //user has subscribed through deposit
+
+    const res = await instance.getIsUserSubscribed(accounts[1])
+    assert.equal(res, true)
+  })
+
+  it('test getIsUserSubscribed function, must return false', async() => {
+    await daiInstance.mint(accounts[1], 100)
+    await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
+
+    const res = await instance.getIsUserSubscribed(accounts[1])
+    assert.equal(res, false)
+  })
 })
