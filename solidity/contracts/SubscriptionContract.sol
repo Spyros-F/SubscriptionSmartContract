@@ -12,7 +12,6 @@ contract SubscriptionContract is Context, Ownable {
   uint256 private totalSupply;
   address private vaultAddress;
   bool private isUserSubscribed;
-  uint256 private userSubscriptionDate;
   ERC20  token;
   mapping (address => User) userInfo;
 
@@ -54,17 +53,16 @@ contract SubscriptionContract is Context, Ownable {
     sizeOfSubscription = _sizeOfSubscription;
   }
 
-  function getIsUserSubscribed() public view returns (bool) {
-    return isUserSubscribed;
+  function getIsUserSubscribed(address user) public view returns (bool) {
+    return userInfo[user].subInfo.status;
   }
-  function getUserSubscriptionDate() public view returns (uint256) {
-    return userSubscriptionDate;
+
+  function getUserSubscriptionDate(address user) public view returns (uint256) {
+    return userInfo[user].subInfo.dateOfSubscription;
   }
 
   function subscribe() public {
     User storage user = userInfo[msg.sender];
-    Subscription memory subInfo = Subscription(false, block.timestamp, block.timestamp);
-    user.subInfo = subInfo;
     user.subInfo.status = true;
     user.subInfo.dateOfSubscription = block.timestamp;
     user.subInfo.expiry = block.timestamp + 30 days;
@@ -83,14 +81,6 @@ contract SubscriptionContract is Context, Ownable {
       }
     } else {
       isUserSubscribed = false;
-    }
-  }
-
-  function SubscriptionDate(address user) public {
-    if (userInfo[user].subInfo.status == true) {
-      userSubscriptionDate = userInfo[user].subInfo.dateOfSubscription;
-    } else {
-      userSubscriptionDate = 0;
     }
   }
 
