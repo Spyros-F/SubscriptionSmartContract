@@ -8,18 +8,17 @@ const { web3 } = require('@openzeppelin/test-helpers/src/setup');
 const subscriptionContract = artifacts.require('SubscriptionContract');
 const daiContract = artifacts.require('DAI');
 
+const helper = require('./utils/utils.js');
+
 let instance;
 let daiInstance;
+const SECONDS_IN_DAY = 86400;
 
 contract('SubscriptionContract', accounts => {
 
   beforeEach(async ()  => {
     daiInstance = await daiContract.new('MYDAI', 'DAI')
     instance = await subscriptionContract.new(20, accounts[2], daiInstance.address , {from:accounts[0]})
-  })
-
-  it('test that subscription size is 20', async() => {
-    assert.equal(await instance.getSizeOfSubscription(), 20)
   })
 
   it('check that users initial balance is 0', async() => {
@@ -29,7 +28,8 @@ contract('SubscriptionContract', accounts => {
 
   it('check that the owner can set subscription', async() => {
     await instance.setSizeOfSubscription(30, {from: accounts[0]})
-    assert.equal(await instance.getSizeOfSubscription(), 30)
+    const sizeOfSubscription = await instance.sizeOfSubscription.call()
+    assert.equal(sizeOfSubscription.toString(), 30)
   })
 
   it('check that only the owner can set subscription', async() => {
@@ -49,72 +49,81 @@ contract('SubscriptionContract', accounts => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
     await instance.deposit(50, {from: accounts[1]})
-    assert.equal(await instance.balanceOf(accounts[1]), 50 - await instance.getSizeOfSubscription())
+    const sizeOfSubscription = await instance.sizeOfSubscription.call()
+    assert.equal(await instance.balanceOf(accounts[1]), 50 - sizeOfSubscription.toString())
   })
 
   it('test deposit when user is subscribed, first deposit user has not subscribe but in the second deposit he is already subscribed so he gets the whole deposit into his balance', async() => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
     await instance.deposit(50, {from: accounts[1]})
-    assert.equal(await instance.balanceOf(accounts[1]), 50 - await instance.getSizeOfSubscription())
+    const sizeOfSubscription = await instance.sizeOfSubscription.call()
+    assert.equal(await instance.balanceOf(accounts[1]), 50 - sizeOfSubscription.toString())
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
     await instance.deposit(50, {from: accounts[1]})
-    assert.equal(await instance.balanceOf(accounts[1]), 100 - await instance.getSizeOfSubscription())
+    assert.equal(await instance.balanceOf(accounts[1]), 100 - sizeOfSubscription.toString())
   })
 
   it('test subscribe function, user deposits without subscription, then he cancel his subscription and subscribes, the amount that we get at the end is what is supposed to be', async() => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 70, {from: accounts[1]})
     await instance.deposit(70, {from: accounts[1]})
-    await daiInstance.increaseAllowance(instance.address, await instance.getSizeOfSubscription(), {from: await instance.getVaultAddress()})
+    const sizeOfSubscription = await instance.sizeOfSubscription.call()
     await instance.cancelSubscription({from: accounts[1]})
-
-    await daiInstance.increaseAllowance(instance.address, await instance.getSizeOfSubscription(), {from: accounts[1]})
+    await daiInstance.increaseAllowance(instance.address, sizeOfSubscription.toString(), {from: accounts[1]})
     await instance.subscribe({from: accounts[1]})
     const userBalance = await instance.balanceOf(accounts[1])
-    assert.equal(userBalance.toString(), 50)
+    const user = await instance.userInfo.call(accounts[1])
+    assert.equal(userBalance.toString(), 30)
+    assert.equal(user.subInfo.status, true)
   })
 
-  it('test cancelSubscription function, function getIsUserSubscribed must return false', async() => { 
+  it('test cancelSubscription function, users status must be false', async() => { 
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
     await instance.deposit(50, {from: accounts[1]})
-    
-    await daiInstance.increaseAllowance(instance.address, 50, {from: await instance.getVaultAddress()})
     await instance.cancelSubscription({from: accounts[1]})
-    assert.equal(await instance.balanceOf(accounts[1]), 50)
-    await instance.checkSubscription(accounts[1])
-    assert.equal(await instance.getIsUserSubscribed(), false)
+    const userBalance = await instance.balanceOf(accounts[1])
+    const user = await instance.userInfo.call(accounts[1])
+    assert.equal(userBalance.toString(), 30)
+    assert.equal(user.subInfo.status, false)
   })
 
-  it('test checkSubscription function, the user subscribes so must return true', async() => {
+  it('test hasSubscriptionExpired function, the user subscribes so must return false', async() => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
     await instance.deposit(50, {from: accounts[1]}) //user has subscribed through deposit
-    
-    await instance.checkSubscription(accounts[1])
-    assert.equal(await instance.getIsUserSubscribed(), true)
+    assert.equal(await instance.hasSubscriptionExpired(accounts[1]), false)
   })
 
-  it('test checkSubscription function, the user has not subscribe so must return false', async() => {
-    await instance.checkSubscription(accounts[1])
-    assert.equal(await instance.getIsUserSubscribed(), false)
-  })
-
-  it('test getIsUserSubscribed function, must return true', async() => {
+  it('test hasSubscriptionExpired function, the users subscribes 31 days are passed so must return true', async() => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
-    await instance.deposit(50, {from: accounts[1]}) //user has subscribed through deposit
-
-    const res = await instance.getIsUserSubscribed(accounts[1])
-    assert.equal(res, true)
+    await instance.deposit(50, {from: accounts[1]})
+    await helper.advanceTimeAndBlock(SECONDS_IN_DAY * 31);
+    assert.equal(await instance.hasSubscriptionExpired(accounts[1]), true)
   })
 
-  it('test getIsUserSubscribed function, must return false', async() => {
+  it('test updateSubscription function, users subscribes, subscription expires and updates it ', async() => {
     await daiInstance.mint(accounts[1], 100)
     await daiInstance.increaseAllowance(instance.address, 50, {from: accounts[1]})
+    await instance.deposit(50, {from: accounts[1]})
+    await helper.advanceTimeAndBlock(SECONDS_IN_DAY * 31);
+    assert.equal(await instance.hasSubscriptionExpired(accounts[1]), true)
+    await instance.updateSubscription(accounts[1])
+    const balance = await instance.balanceOf(accounts[1])
+    assert.equal(balance.toString(), 10)
+  })
 
-    const res = await instance.getIsUserSubscribed(accounts[1])
-    assert.equal(res, false)
+  it('test updateSubscription function, users subscribes, subscription expires and tries to update it but does not have money ', async() => {
+    await daiInstance.mint(accounts[1], 100)
+    const sizeOfSubscription = await instance.sizeOfSubscription.call()
+    await daiInstance.increaseAllowance(instance.address, sizeOfSubscription.toString(), {from: accounts[1]})
+    await instance.deposit(sizeOfSubscription.toString(), {from: accounts[1]})
+    await helper.advanceTimeAndBlock(SECONDS_IN_DAY * 31);
+    assert.equal(await instance.hasSubscriptionExpired(accounts[1]), true)
+    await instance.updateSubscription(accounts[1])
+    const user = await instance.userInfo.call(accounts[1])
+    assert.equal(user.subInfo.status, false)
   })
 })

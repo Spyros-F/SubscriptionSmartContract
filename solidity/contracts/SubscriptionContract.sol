@@ -3,17 +3,14 @@ pragma solidity ^0.8.3;
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./token/IBEP20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./token/IBEP20.sol";
 
 contract SubscriptionContract is Context, Ownable {
-
-  uint256 private sizeOfSubscription;
-  uint256 private totalSupply;
-  address private vaultAddress;
-  bool private isUserSubscribed;
-  ERC20  token;
-  mapping (address => User) userInfo;
+  uint256 public sizeOfSubscription;
+  address public vaultAddress;
+  ERC20 public token;
+  mapping (address => User) public userInfo;
 
   struct User {
     uint256 balance;
@@ -22,9 +19,9 @@ contract SubscriptionContract is Context, Ownable {
   }
 
   struct Subscription {
+    // is true if user is subscribed else is false
     bool status;
     uint256 dateOfSubscription;
-    uint256 expiry;
   }
 
   constructor(uint256 _sizeOfSubscription, address _vaultAddress, ERC20 _token) {
@@ -33,80 +30,91 @@ contract SubscriptionContract is Context, Ownable {
     token = _token;
   }
 
-  function balanceOf(address user) public view virtual returns (uint256) {
+  /**
+   * @notice Returns the balance of a user in the contract
+   * @param user The address of a user
+   */
+  function balanceOf(address user) public view returns (uint256) {
     return userInfo[user].balance;
   }
 
-  function getSizeOfSubscription() public view virtual  returns (uint256) {
-    return sizeOfSubscription;
-  }
-
-  function getToken() public view virtual  returns (ERC20) {
-    return token;
-  }
-
-  function getVaultAddress() public view virtual  returns (address) {
-    return vaultAddress;
-  }
-
-  function setSizeOfSubscription(uint256 _sizeOfSubscription) public onlyOwner{
+  /**
+   * @notice The owner of the contract sets the value of the subscription
+   * @param _sizeOfSubscription value of the subscription
+   */
+  function setSizeOfSubscription(uint256 _sizeOfSubscription) public onlyOwner {
     sizeOfSubscription = _sizeOfSubscription;
   }
 
-  function getIsUserSubscribed(address user) public view returns (bool) {
-    return userInfo[user].subInfo.status;
-  }
-
-  function getUserSubscriptionDate(address user) public view returns (uint256) {
-    return userInfo[user].subInfo.dateOfSubscription;
-  }
-
+  /**
+   * @notice Subscribes the user that made the call
+   */
   function subscribe() public {
-    User storage user = userInfo[msg.sender];
-    user.subInfo.status = true;
-    user.subInfo.dateOfSubscription = block.timestamp;
-    user.subInfo.expiry = block.timestamp + 30 days;
-    totalSupply -= sizeOfSubscription;
-    user.balance -= sizeOfSubscription;
+    userInfo[msg.sender] = User({
+      subInfo: Subscription({
+        status: true,
+        dateOfSubscription: block.timestamp
+      }),
+      userAddr: msg.sender,
+      balance: balanceOf(msg.sender) - sizeOfSubscription
+    });
+
     require(token.transfer(vaultAddress, sizeOfSubscription), "Transfer to vault address failed");
   }
 
-  function checkSubscription(address user) public {        
-    if (userInfo[user].subInfo.status == true) {
-      if(userInfo[user].subInfo.expiry < block.timestamp ) {
-        isUserSubscribed = false;
-        userInfo[user].subInfo.status = false;
+  /**
+   * @notice Checks if subscription has expire
+   * @param user the address of a user
+   */
+  function hasSubscriptionExpired(address user) public view returns (bool) {
+    return userInfo[user].subInfo.dateOfSubscription + 30 days < block.timestamp;
+  }
+
+  /**
+   * @notice If subscription has expire and user has money updates his subscription, otherwise makes
+   * his subscription status false
+   * @param user the address of a user
+   */
+  function updateSubscription(address user) public {
+    if (hasSubscriptionExpired(user)) {
+      if(userInfo[user].subInfo.status && balanceOf(user) > sizeOfSubscription) {
+        userInfo[user].balance -= sizeOfSubscription;
+        userInfo[user].subInfo.dateOfSubscription = block.timestamp;
       } else {
-        isUserSubscribed = true;
+        userInfo[user].subInfo.status = false;
       }
-    } else {
-      isUserSubscribed = false;
     }
   }
 
+  /**
+   * @notice Cancels users subscription 
+   */
   function cancelSubscription() public {
     User storage user = userInfo[msg.sender];
 
     if(user.subInfo.status == true) {
-      token.transferFrom(vaultAddress, msg.sender, sizeOfSubscription);
-      user.balance += sizeOfSubscription;
-      totalSupply += sizeOfSubscription;
       user.subInfo.status = false;
     }
   }
 
   event Deposit(address user, uint256 amount);
 
-
+  /**
+   * @notice Updates if subscription has expired, calls subscribe if user is not subscribe and transfer the tokens
+   * from user to the contract 
+   * @param amount the value that user deposits
+   */
   function deposit(uint256 amount) external {
-    User storage user = userInfo[msg.sender];
-    
     require(token.transferFrom(msg.sender, address(this), amount), "User cannot achieve the transfer");
+
+    User storage user = userInfo[msg.sender];
     user.balance = user.balance + amount;
-    totalSupply += amount;
+    updateSubscription(msg.sender);
+
     if(!user.subInfo.status) {
       subscribe();
     }
+
     emit Deposit(msg.sender, amount);
   }
 }
