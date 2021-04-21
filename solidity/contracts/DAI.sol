@@ -33,11 +33,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 contract DAI is Context, IERC20 {
     mapping (address => uint256) private _balances;
-
     mapping (address => mapping (address => uint256)) private _allowances;
-
     uint256 private _totalSupply;
-
     string private _name;
     string private _symbol;
 
