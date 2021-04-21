@@ -3,13 +3,13 @@ const {getCustomWeb3Provider} = require('./customProvider')
 const {getWeb3Provider} = require('./provider')
 const {createDaiInstance} = require('./daiContractInstance')
 
-const contractAddress = '0xc0846273a17e519c3085f2d07099D87a3fdC908f'
+const contractAddress = '0x19370aB3B53CD374044CE5b18E713386eC2A3c13'
 
 export const getSizeOfSubscription = async() => {
   const web3 = getCustomWeb3Provider()
   const subscriptionContract = new web3.eth.Contract(abi, contractAddress)
-  const sizeOfSubscription =  await subscriptionContract.methods.getSizeOfSubscription().call()
-  return web3.utils.fromWei(sizeOfSubscription,'ether')
+  const sizeOfSubscription = await subscriptionContract.methods.sizeOfSubscription().call()
+  return web3.utils.fromWei(sizeOfSubscription.toString(),'ether')
 }
 
 export const getUserBalance = async(address) => {
@@ -23,7 +23,8 @@ export const getLastMonthOfSubscription = async(address) => {
   const web3 = getWeb3Provider()
   const subscriptionContract = new web3.eth.Contract(abi, contractAddress)
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let lastSubscriptionDate =  await subscriptionContract.methods.getUserSubscriptionDate(address).call()
+  const user = await subscriptionContract.methods.userInfo(address).call()
+  let lastSubscriptionDate =  user.subInfo.dateOfSubscription
   if (lastSubscriptionDate != 0) {
     lastSubscriptionDate = new Date(lastSubscriptionDate * 1000)
     const lastMonthOfSubscription = months[lastSubscriptionDate.getMonth()]
@@ -45,6 +46,7 @@ export const depositAction = async(amount, account) => {
 export const isUserSubscribed = async(account) => {
   const web3 = getWeb3Provider()
   const subscriptionContract = new web3.eth.Contract(abi, contractAddress)
-  const isUserSubscribed = await subscriptionContract.methods.getIsUserSubscribed(account).call()
+  const user = await subscriptionContract.methods.userInfo(account).call()
+  const isUserSubscribed = user.subInfo.status
   return isUserSubscribed
 }

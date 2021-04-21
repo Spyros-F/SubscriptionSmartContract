@@ -1,13 +1,13 @@
 import React, {useState, useEffect} from 'react'
 import {getSizeOfSubscription, getUserBalance, getLastMonthOfSubscription, depositAction, isUserSubscribed} from './services/subscribeActions'
-import {Button} from '@material-ui/core'
 import FormControl from '@material-ui/core/FormControl'
 import Grid from '@material-ui/core/Grid'
 import Typography from '@material-ui/core/Typography'
 import OutlinedInput from '@material-ui/core/OutlinedInput'
-import styles from './styles'
 import {useWeb3React} from '@web3-react/core'
 import * as connectors from './connectors/connectors'
+import AsyncButton from './ui-elements/asyncButton'
+import styles from './styles'
 
 const supportedProviders = [
   {
@@ -27,6 +27,7 @@ const App = () => {
   const [providers] = useState(supportedProviders)
   const [isUserSubscriber, setIsUserSubscriber] = useState(false)
   const [btnDisable, setBtnDisable] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const loadInfo = async () => {
     const sizeOfSubscription = await getSizeOfSubscription()
@@ -80,9 +81,16 @@ const App = () => {
   }
 
   const deposit = async() => {
-    const deposit = await depositAction(value, account)
-    await getUsersBalanceOnContract()
-    await getLastMonthSubscription()
+    try{
+      setLoading(true)
+      const deposit = await depositAction(value, account)
+      await getUsersBalanceOnContract()
+      await getLastMonthSubscription()
+      setLoading(false)
+    } catch (e) {
+      setLoading(false)
+      console.log('spyros',loading)
+    }
   }
 
   return (
@@ -93,7 +101,7 @@ const App = () => {
           <Typography variant='subtitle2' className={classes.sizeOfSubscriptionValue}>{sizeOfSubscription}</Typography>
         </Grid>
         <Grid container alignItems='center' item xs={12} className={classes.connectBtnContainer} justify='center'>
-          <Button variant="contained" color="primary" onClick={() => connectAccount()}>Connect Account</Button>
+          <AsyncButton variant="contained" color="primary" onClick={() => connectAccount()}>Connect Account</AsyncButton>
         </Grid>
         {account? (
           <>
@@ -114,14 +122,15 @@ const App = () => {
                 placeholder={'0'}
                 />
               </FormControl>
-              <Button onClick={() => deposit()}
+              <AsyncButton onClick={() => deposit()}
                 variant="contained" 
                 color="primary" 
                 className={classes.depositBtn}
                 disabled={btnDisable}
+                loading={loading}
               >
                 Deposit
-              </Button>
+              </AsyncButton>
             </Grid>
           </>
         ): null}
