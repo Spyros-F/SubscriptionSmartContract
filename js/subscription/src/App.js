@@ -89,7 +89,6 @@ const App = () => {
       setLoading(false)
     } catch (e) {
       setLoading(false)
-      console.log('spyros',loading)
     }
   }
 
